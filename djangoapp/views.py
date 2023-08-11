@@ -212,6 +212,7 @@ def myfun(cmd1,rando):
         # return google_search(cmd)
         # response = client.create('text', prompt=cmd)
 
+
         # pywhatkit.search(cmd)
         ans = wikipedia.summary(cmd)
 
