@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title> Voice Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rajdhani'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Teko'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Quantico'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Press+Start+2P'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rationale'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Geo'>
+<!-- <link rel="stylesheet" href="./style.css"> -->
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+<style>
+  /* Add custom styles for the robot */
+  .robot-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+  }
+
+  .robot {
+      width: 50px;
+      height: 50px;
+      background-color: #52c564;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 10px;
+  }
+
+  .robot i {
+      color: #fff;
+  }
+</style>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<head>
+	<title>Chatbot</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+  <div class="container text-center">
+    <h1>Voice Assistant</h1>
+
+    <div id="button">
+
+      <button id="startListening" class="btns">
+        <i class="fas fa-microphone"></i></button>
+
+		<input id="input"><button id="rec" class="btns">Enter</button>
+    <button id="toggleSpeaker" class="btns">
+      <i id="speakerIcon" class="fas fa-volume-up"></i>
+    </div>
+		<br><p class="text botchat">Response<p><div id="response" class="text-center"></textarea>
+
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script>
+    let recognition;
+    let speakerOn = true;
+
+    $(document).ready(function () {
+      captureAndAnalyzeEmotion();
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = false; // Recognize speech as a single sentence
+      recognition.interimResults = false; // Show only final results
+
+      // Add event listener for the microphone button
+      $("#startListening").click(function () {
+        startListening();
+      });
+
+      // Add event listener for the toggle speaker button
+      $("#toggleSpeaker").click(function () {
+        toggleSpeaker();
+      });
+
+      $("#rec").click(function () {
+        var userInput = $("#input").val();
+        if (!userInput) {
+          $("#response").append('<p class="text botchat">Please enter something.</p>');
+          return; // Return early if the input is empty
+        }
+
+        $.ajax({
+          type: "POST",
+          url: "{% url 'processInput' %}", // Replace with the actual URL to your Django view
+          data: {
+            user_input: userInput,
+          },
+          beforeSend: function (xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+          },
+          success: function (response) {
+            $("#response").empty();
+            $("#response").append('<p class="text botchat">' + response.response + "</p>"); // Display bot response
+            if (speakerOn) {
+              speakResponse(response.response); // Speak out the response if speaker is on
+            }
+          },
+        });
+      });
+    });
+     function captureAndAnalyzeEmotion() {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'processEmotion' %}",
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                },
+                success: function (response) {
+                    $("#response").empty();
+                    $("#response").append('<p class="text botchat">' + response.response + "</p>");
+                }
+            });
+        }
+
+
+    function startListening() {
+      // Check if SpeechRecognition is available
+      if (!("webkitSpeechRecognition" in window)) {
+        $("#response").append('<p class="text botchat">Sorry, Speech Recognition is not supported in this browser.</p>');
+        return;
+      }
+      recognition.start();
+      recognition.onresult = function (event) {
+        let recognizedText = event.results[0][0].transcript;
+        $("#input").val(recognizedText);
+        sendUserInput(recognizedText);
+      };
+      recognition.onerror = function (event) {
+        $("#response").append('<p class="text botchat">Error occurred in recognition: ' + event.error + "</p>");
+      };
+    }
+
+    function toggleSpeaker() {
+      speakerOn = !speakerOn;
+      const speakerIcon = document.getElementById("speakerIcon");
+      speakerIcon.className = speakerOn ? "fas fa-volume-up" : "fas fa-volume-mute";
+    }
+
+    function speakResponse(text) {
+      if ("speechSynthesis" in window) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        synth.speak(utterance);
+      } else {
+        console.log("Text-to-speech not supported in this browser.");
+      }
+    }
+
+    function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = jQuery.trim(cookies[i]);
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + "=") {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      if (cookieValue == null) {
+        return "Sorry";
+      } else {
+        return cookieValue;
+      }
+    }
+  </script>
+</body>
+</html>
+
+</body>
+</html>

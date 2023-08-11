@@ -1,0 +1,380 @@
+ <!-- <form method="post" action="{% url 'chatbot_view' %}">
+        {% csrf_token %}
+        <input type="text" name="user_input" id="input" autofocus>
+        <button type="submit" class="btns" id="rec">Enter</button>
+    </form> -->
+
+
+
+<!-- partial -->
+  <!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
+  <script  src="{% static 'js/script.js' %}"></script> -->
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+      // JavaScript code goes here
+      $(document).ready(function() {
+          $("#input").keypress(function(event) {
+              if (event.which === 13) {
+                  event.preventDefault();
+                  send();
+              }
+          });
+
+          $("#rec").click(function(event) {
+              event.preventDefault();
+              send();
+          });
+
+          function send() {
+              var user_input = $("#input").val();
+              $.ajax({
+                  type: "POST",
+                  url: "/{% url 'chatbot_view'%}/", // The URL to your Django view that handles the chatbot logic
+                  data: {
+                      'user_input': user_input,
+                      'csrfmiddlewaretoken': '{{ csrf_token }}' // CSRF token required for Django POST requests
+                  },
+                  success: function(data) {
+                      $("#response").html(data.response_text); // Update the bot response in the HTML
+                  },
+                  error: function(xhr, textStatus, error) {
+                      console.log("Error:", error);
+                  }
+              });
+          }
+      });
+  </script> -->
+
+
+we can not open whatsapp using AppOpener Run method but
+can open notepad.
+
+
+import numpy as np
+import keras
+import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+
+# Predefined strings
+predefined_strings = [
+    "I love machine learning",
+    "Python is my favorite language",
+    "Deep learning is fascinating",
+    "Data science is interesting"
+]
+
+# Labels for predefined strings (1: Present, 0: Not present)
+labels = [1, 1, 1, 1]
+
+# Tokenize and preprocess predefined strings
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(predefined_strings)
+predefined_sequences = tokenizer.texts_to_sequences(predefined_strings)
+max_sequence_length = max(len(seq) for seq in predefined_sequences)
+predefined_sequences_padded = pad_sequences(predefined_sequences, maxlen=max_sequence_length)
+
+# Convert labels to numpy array
+labels = np.array(labels)
+
+# Build the model
+model = Sequential()
+model.add(Dense(32, activation='relu', input_shape=(max_sequence_length,)))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.summary()
+
+# Train the model
+model.fit(predefined_sequences_padded, labels, epochs=10, verbose=1)
+
+# User input
+user_input = "I have water"
+
+# Tokenize and preprocess the user input
+user_sequence = tokenizer.texts_to_sequences([user_input])
+user_sequence_padded = pad_sequences(user_sequence, maxlen=max_sequence_length)
+
+# Predict whether the meaning is present or not
+prediction = model.predict(user_sequence_padded)[0][0]
+is_present = prediction >= 0.5
+
+# Print the result
+print("Your input:", user_input)
+if is_present:
+    print("Meaning is present in the predefined strings.")
+else:
+    print("Meaning is not present in the predefined strings.")
+
+
+
+
+# #MLP String meaning matching model using the NLP
+# import keras
+# import numpy as np
+# from sklearn.metrics.pairwise import cosine_similarity
+# import tensorflow as tf
+# from keras.models import Sequential
+# from keras.layers import Dense
+# from keras.preprocessing.text import Tokenizer
+# from keras.preprocessing.sequence import pad_sequences
+
+# # Predefined strings
+# predefined_strings = [
+# "How are you","How about you","How do you do?"
+# ]
+
+# # Tokenize and preprocess predefined strings
+# tokenizer = Tokenizer()
+# tokenizer.fit_on_texts(predefined_strings)
+# predefined_sequences = tokenizer.texts_to_sequences(predefined_strings)
+# max_sequence_length = max(len(seq) for seq in predefined_sequences)
+# predefined_sequences_padded = pad_sequences(predefined_sequences, maxlen=max_sequence_length)
+
+# # Build the model
+# model = Sequential()
+# model.add(Dense(32, activation='relu', input_shape=(max_sequence_length,)))
+# model.add(Dense(16, activation='relu'))
+# model.add(Dense(1, activation='sigmoid'))
+
+# model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# model.summary()
+
+# # Train the model (optional)
+# # In this example, we don't need to train the model as we're using cosine similarity.
+
+# # User input
+# user_input = "can you open whatsapp"
+# # Tokenize and preprocess the user input
+# user_sequence = tokenizer.texts_to_sequences([user_input])
+# user_sequence_padded = pad_sequences(user_sequence, maxlen=max_sequence_length)
+
+# # Predict similarity using cosine similarity
+# similarities = cosine_similarity(user_sequence_padded, predefined_sequences_padded)
+
+# # Find the most similar predefined string
+# most_similar_index = np.argmax(similarities)
+# most_similar_string = predefined_strings[most_similar_index]
+
+# # Print the result
+# print("Your input:", user_input)
+# print("Most similar predefined string:", most_similar_string)
+# print("Similarity Score:", similarities[0][most_similar_index])
+
+
+
+
+
+
+for java :
+  <!-- <script>
+    let recognition;
+    let speakerOn = true;
+
+$(document).ready(function () {
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = false; // Recognize speech as a single sentence
+  recognition.interimResults = false; // Show only final results
+
+  // Add event listener for the microphone button
+  $("#startListening").click(function () {
+    startListening();
+  });
+  // Add event listener for the toggle speaker button
+  $("#toggleSpeaker").click(function () {
+        toggleSpeaker();
+      });
+});
+
+
+function startListening() {
+  // Check if SpeechRecognition is available
+  if (!("webkitSpeechRecognition" in window)) {
+    $("#response").append('<p class="text botchat">Sorry, Speech Recognition is not supported in this browser.</p>');
+    return;
+  }
+  recognition.start();
+  recognition.onresult = function (event) {
+    let recognizedText = event.results[0][0].transcript;
+    $("#input").val(recognizedText);
+    sendUserInput(recognizedText);
+  };
+  recognition.onerror = function (event) {
+    $("#response").append('<p class="text botchat">Error occurred in recognition: ' + event.error + '</p>');
+  };
+}
+      $(document).ready(function () {
+          $("#rec").click(function () {
+              var userInput = $("#input").val();
+              if (!userInput) {
+                $("#response").append('<p class="text botchat">Please enter something.</p>');
+                return;  // Return early if the input is empty
+            }
+
+              $.ajax({
+                  type: "POST",
+                  url: "{% url 'processInput' %}",  // Replace with the actual URL to your Django view
+                  data: {
+
+                      'user_input': userInput
+                  },
+                  beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                },
+                  success: function (response) {
+                      // $("#response").append('<p class="text botchat">' + userInput + '</p>'); // Display user input
+                      $("#response").empty();
+                      $("#response").append('<p class="text botchat">' + response.response + '</p>'); // Display bot response
+                      // $("#input").val("");  // Clear the input after getting the response
+                      if (speakerOn) {
+                           speakResponse(response.response); // Speak out the response if speaker is on
+                       }
+                  }
+              });
+          });
+          function toggleSpeaker() {
+      speakerOn = !speakerOn;
+      const speakerIcon = document.getElementById("speakerIcon");
+      speakerIcon.className = speakerOn ? "fas fa-volume-up" : "fas fa-volume-mute";
+    }
+
+    function speakResponse(text) {
+      if ('speechSynthesis' in window) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        synth.speak(utterance);
+      } else {
+        console.log("Text-to-speech not supported in this browser.");
+      }
+    }
+
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            if(cookieValue == null){
+              return "Sorry";
+            }
+            else{
+            return cookieValue;
+            }
+        }
+      });
+  </script> -->
+ <!-- <script>
+    let recognition;
+    let speakerOn = true;
+
+$(document).ready(function () {
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = false; // Recognize speech as a single sentence
+  recognition.interimResults = false; // Show only final results
+
+  // Add event listener for the microphone button
+  $("#startListening").click(function () {
+    startListening();
+  });
+  // Add event listener for the toggle speaker button
+  $("#toggleSpeaker").click(function () {
+        toggleSpeaker();
+      });
+});
+
+
+function startListening() {
+  // Check if SpeechRecognition is available
+  if (!("webkitSpeechRecognition" in window)) {
+    $("#response").append('<p class="text botchat">Sorry, Speech Recognition is not supported in this browser.</p>');
+    return;
+  }
+  recognition.start();
+  recognition.onresult = function (event) {
+    let recognizedText = event.results[0][0].transcript;
+    $("#input").val(recognizedText);
+    sendUserInput(recognizedText);
+  };
+  recognition.onerror = function (event) {
+    $("#response").append('<p class="text botchat">Error occurred in recognition: ' + event.error + '</p>');
+  };
+}
+      $(document).ready(function () {
+          $("#rec").click(function () {
+              var userInput = $("#input").val();
+              if (!userInput) {
+                $("#response").append('<p class="text botchat">Please enter something.</p>');
+                return;  // Return early if the input is empty
+            }
+
+              $.ajax({
+                  type: "POST",
+                  url: "{% url 'processInput' %}",  // Replace with the actual URL to your Django view
+                  data: {
+
+                      'user_input': userInput
+                  },
+                  beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                },
+                  success: function (response) {
+                      // $("#response").append('<p class="text botchat">' + userInput + '</p>'); // Display user input
+                      $("#response").empty();
+                      $("#response").append('<p class="text botchat">' + response.response + '</p>'); // Display bot response
+                      // $("#input").val("");  // Clear the input after getting the response
+                      if (speakerOn) {
+                           speakResponse(response.response); // Speak out the response if speaker is on
+                       }
+                  }
+              });
+          });
+          function toggleSpeaker() {
+      speakerOn = !speakerOn;
+      const speakerIcon = document.getElementById("speakerIcon");
+      speakerIcon.className = speakerOn ? "fas fa-volume-up" : "fas fa-volume-mute";
+    }
+
+    function speakResponse(text) {
+      if ('speechSynthesis' in window) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        synth.speak(utterance);
+      } else {
+        console.log("Text-to-speech not supported in this browser.");
+      }
+    }
+
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            if(cookieValue == null){
+              return "Sorry";
+            }
+            else{
+            return cookieValue;
+            }
+        }
+      });
+  </script> -->
