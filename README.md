@@ -1,4 +1,4 @@
-Voice Assistant
+#Voice Assistant
 Voice Assistant is a Django web application that functions as a simple chatbot with voice and text input capabilities. It uses various libraries and APIs to process user input, provide responses, and perform tasks such as fetching weather information, sending messages, and more.
 
 Features
