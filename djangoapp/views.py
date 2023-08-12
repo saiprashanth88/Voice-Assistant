@@ -17,40 +17,118 @@ from fer import FER
 import cv2
 import time
 import os
+import googlemaps
+import speech_recognition as sr
+from django.conf import settings
+from django.http import JsonResponse
+
+import requests
+import geocoder
+
+def get_current_location():
+    # Get your public IP address
+    ip_response = requests.get("https://api64.ipify.org?format=json")
+    ip_data = ip_response.json()
+    ip_address = ip_data["ip"]
+
+    # Use geocoder to get location details based on IP address
+    g = geocoder.ip(ip_address)
+
+    if g.ok:
+        location = g.json
+        return location["city"]
+    else:
+        return "Hyderabad"
+import requests
+
+def myweather():
+    api_key = 'eb7a2d4a5a9b284fe54b7bb547238443'
+    city_name = "Medchal"
+    base_url = 'http://api.openweathermap.org/data/2.5/weather?'
+
+    complete_url = f"{base_url}q={city_name}&appid={api_key}&units=metric"
+
+    response = requests.get(complete_url)
+    data = response.json()
+
+    if data["cod"] == 200:
+        main_data = data["main"]
+        weather_data = data["weather"][0]
+        return f"Weather in {city_name}: {weather_data['description']}"+"\n"+f"Temperature: {main_data['temp']}°C" +"\n"+ f"Humidity: {main_data['humidity']}%"
+    else:
+        return "City not found."
+
+    pass
 
 
-# openai.api_key = "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"
-# model_engine = "gpt-3.5-turbo"
-# response = openai.ChatCompletion.create(
-#     model='gpt-3.5-turbo',
-#     messages=[
-#         {"role": "system", "content": "You are a helpful assistant."},
-#         {"role": "user", "content": "Hello, ChatGPT!"},
-#     ])
+GOOGLE_MAPS_API_KEY = "AIzaSyBK3AgwMmvv6lhxEzIvqYGlZT2NyeEZwyg"
+def navigate(destination):
+    # Initialize the Google Maps API client
+    gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
 
-# message = response.choices[0]['message']
-# # print("{}: {}".format(message['role'], message['content']))
+    # Initialize the SpeechRecognition recognizer
 
-# rollbar.init('c5151472baab406ea4c8173c1f14db1c', 'testenv')
 
-# def ask(question):
-#     response = openai.ChatCompletion.create(
-#         model='gpt-3.5-turbo',
-#         n=1,
-#         messages=[
-#             {"role": "system", "content": "You are a helpful assistant with exciting, interesting things to say."},
-#             {"role": "user", "content": question},
-#         ])
+    try:
 
-#     message = response.choices[0]['message']
-#     return message['content']
-# def ans(question):
-#     try:
-#         return ask(question)
-#     except Exception as e:
-#         rollbar.report_exc_info()
-#         return "Error asking"
-#     pass
+        # if "navigate to" in command.lower():
+        #     destination = command.split("navigate to", 1)[1].strip()
+
+            # Get user's current location (you might need to implement this)
+        user_location = get_current_location()
+
+        # Get directions from user's location to the destination
+        directions = gmaps.directions(user_location, destination, mode="driving")
+
+        if directions:
+            route = directions[0]
+            return f"Navigating to {destination}. Estimated duration: {route['legs'][0]['duration']['text']}."
+
+        else:
+            return f"Sorry, I couldn't find directions to {destination}."
+
+
+    except sr.UnknownValueError:
+        return "Sorry, I couldn't understand what you said."
+
+
+
+openai.api_key = "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"
+model_engine = "gpt-3.5-turbo"
+response = openai.ChatCompletion.create(
+    model='gpt-3.5-turbo',
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello, ChatGPT!"},
+    ])
+
+message = response.choices[0]['message']
+# print("{}: {}".format(message['role'], message['content']))
+
+rollbar.init('c5151472baab406ea4c8173c1f14db1c', 'testenv')
+
+def ask(question):
+    response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        n=1,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant with exciting, interesting things to say."},
+            {"role": "user", "content": question},
+        ])
+
+    message = response.choices[0]['message']
+    return message['content']
+def ans(question):
+    try:
+        return ask(question)
+    except Exception as e:
+        rollbar.report_exc_info()
+        return "Error asking"
+    pass
+
+
+
+
 # try:
 #     print(ask("what is the difference between ann and cnn"))
 # except Exception as e:
@@ -82,33 +160,102 @@ def processInput(request):
 
         return JsonResponse({'response': response})
     return JsonResponse({'response': 'Invalid request'})
+# cv2.destroyAllWindows()
+def generate_response_from_emotion(emotion):
+    if emotion == 'angry':
+        return "I sense anger. Take a deep breath and try to calm down."
+    elif emotion == 'happy':
+        return "You seem happy! Spread the positivity around!"
+    elif emotion == 'sad':
+        return "Feeling sad? Reach out to a friend or do something that makes you happy."
+    elif emotion == 'surprise':
+        return "Surprise! Life is full of unexpected moments."
+    elif emotion == 'neutral':
+        return "You look neutral. How can I assist you today?"
+    elif emotion == 'disgust':
+        return "If something's bothering you, it's okay to express your feelings."
+    elif emotion == 'fear':
+        return "Feeling fearful? Remember that facing your fears can lead to growth."
+    else:
+        return "I'm not sure about your emotion. How can I assist you?"
+
+def generate_recommendation_from_emotion(emotion):
+    if emotion == 'angry':
+        return "Consider taking a break, going for a walk, or practicing deep breathing."
+    elif emotion == 'happy':
+        return "Celebrate the moment! Do something you enjoy or spend time with loved ones."
+    elif emotion == 'sad':
+        return "Engage in activities that bring you joy, like listening to music or watching a movie."
+    elif emotion == 'surprise':
+        return "Embrace the unexpected! Try something new or take a spontaneous adventure."
+    elif emotion == 'neutral':
+        return "Use this moment to reflect, plan, or focus on tasks that need your attention."
+    elif emotion == 'disgust':
+        return "If something is causing discomfort, consider addressing the issue or finding ways to cope."
+    elif emotion == 'fear':
+        return "Face your fears in small steps. Reach out for support if needed and stay positive."
+    else:
+        return "I don't have specific recommendations for this emotion."
+
+
 def processEmotion(request):
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     videoCaptureObject = cv2.VideoCapture(0)
     ret, frame = videoCaptureObject.read()
     cv2.imwrite("mypic.jpg", frame)
     videoCaptureObject.release()
-    cv2.destroyAllWindows()
-    time.sleep(5)
+    # cv2.destroyAllWindows()
+    # time.sleep(5)
 
     emotion_detector = FER(mtcnn=True)
     test_img_low_quality = cv2.imread("mypic.jpg")
     dominant_emotion, emotion_score = emotion_detector.top_emotion(test_img_low_quality)
+    res = generate_recommendation_from_emotion(dominant_emotion)
 
-    return JsonResponse({"response": f"Dominant Emotion: {dominant_emotion} (Score: {emotion_score:.2f})"})
+
+    return JsonResponse({"response": f"Your Emotion: {dominant_emotion} (\n!: {res})"})
+def send_whatsapp_message(contact_name, message):
+    contacts = {
+        "prashanth": "+918897698949",
+        "sreekar": "+918179227736",
+        "vandana": "+916302069075",
+        "sreehaas": "+918885782646"
+        # Add more contacts here
+    }
+
+    if contact_name in contacts:
+        phone_number = contacts[contact_name]
+        pywhatkit.sendwhatmsg_instantly(phone_no=phone_number, message=message)
+        # talk("Message sent to " + contact_name)
+    # else:
+        # talk("Contact not found in your list")
+
 
 
 def myfun(cmd1,rando):
     cmd1 = cmd1.lower()
-    cmd = cmd1.strip()
+    # cmd = cmd1.strip()
     operators = "+-*/%"
     numbers = "0123456789"
-    try:
-        if any(op in cmd for op in operators) and any(num in cmd for num in numbers):
-            cmd = eval(cmd)
-            return "The answer is: " + cmd
-    except:
-        cmd = cmd
+    ct =0
+    for i in cmd1:
+        if not i.isalpha():
+            ct+=1
+    if ct== len(cmd1):
+        try:
+            cmd = eval(cmd1)
+            return cmd
+        except:
+            cmd =cmd1
+
+    cmd = cmd1
+
+    # try:
+    #     if any(op in cmd for op in operators) and any(num in cmd for num in numbers):
+    #         cmd = eval(cmd)
+    #         return "The answer is: " + cmd
+    # except:
+    #     cmd = cmd
 
     if cmd in "open whatsapp , whatsapp, wtapp, wt":
         return "opening"
@@ -198,6 +345,68 @@ def myfun(cmd1,rando):
 
         pywhatkit.playonyt(song)
         return "Playing" + song
+    # elif "navigate to" in cmd:
+    #     destination = cmd.split("navigate to", 1)[1].strip()
+    #     nav = navigate(destination)
+    #     return nav
+    elif 'navigate to' in cmd or 'directions to' in cmd:
+        destination = cmd.replace('navigate to', '').replace('directions to', '').strip()
+        if destination:
+            # Construct Google Maps URL
+            google_maps_url = f'https://www.google.com/maps/dir/?api=1&destination={destination}'
+
+            # Open Google Maps in default web browser
+            import webbrowser
+            webbrowser.open(google_maps_url)
+
+            return f"Opening Google Maps with directions to {destination}"
+        else:
+            return "Please provide a valid destination for directions."
+    elif "weather" in cmd:
+        we = myweather()
+        return we
+    elif "send a whatsapp" in cmd or "send a message" in cmd or "send message" in cmd:
+        words = cmd.split()
+        # mydict = dict()
+        # mydict["prashanth"] = 8897698949
+        # mydict["sreekar"] = 8179227736
+        # mydict["vandana"] = 6302069075
+        name =""
+        # for i in range(len(words)):
+
+        #     if mydict[i]:
+        #         name = mydict[i]
+        #         break
+        # contacts
+        # idx = words.index("that")
+        # content = words[idx:]
+        # matter = ""
+        # for i in content:
+        #     matter += i
+        #     matter+=" "
+        # try:
+
+        #     pywhatkit.sendwhatmsg_instantly(phone_no=name,message=matter)
+        #     return "Sent successfully"
+        # except:
+        #     return "unsuccessful"
+        words = cmd.split()
+        idx = words.index("to")  # Find index of "to" keyword
+        contact_name = words[idx + 1].lower()  # Extract contact name after "to"
+        idx = words.index("that")  # Find index of "that" keyword
+        message = " ".join(words[idx + 1:])
+        try:
+             # Extract message content after "that"
+            send_whatsapp_message(contact_name, message)
+            return "Successful"
+        except:
+            return "UNSUCCESSFUL"
+
+
+
+
+
+
 
     else:
         # if rando <= 2:
@@ -214,11 +423,11 @@ def myfun(cmd1,rando):
 
 
         # pywhatkit.search(cmd)
-        ans = wikipedia.summary(cmd)
+        # sol  = wikipedia.summary(cmd)
+        sol = ans(cmd)
 
-
-        return ans
-
+        # return sol
+        return sol
 
 
 
