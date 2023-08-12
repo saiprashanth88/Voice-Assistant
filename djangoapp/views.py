@@ -93,38 +93,14 @@ def navigate(destination):
 
 
 
-openai.api_key = "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"
-model_engine = "gpt-3.5-turbo"
-response = openai.ChatCompletion.create(
-    model='gpt-3.5-turbo',
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Hello, ChatGPT!"},
-    ])
-
-message = response.choices[0]['message']
-# print("{}: {}".format(message['role'], message['content']))
-
-rollbar.init('c5151472baab406ea4c8173c1f14db1c', 'testenv')
-
-def ask(question):
-    response = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        n=1,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant with exciting, interesting things to say."},
-            {"role": "user", "content": question},
-        ])
-
-    message = response.choices[0]['message']
-    return message['content']
-def ans(question):
-    try:
-        return ask(question)
-    except Exception as e:
-        rollbar.report_exc_info()
-        return "Error asking"
-    pass
+# openai.api_key = "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"
+# model_engine = "gpt-3.5-turbo"
+# response = openai.ChatCompletion.create(
+#     model='gpt-3.5-turbo',
+#     messages=[
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {"role": "user", "content": "Hello, ChatGPT!"},
+#     ])
 
 
 
@@ -137,7 +113,7 @@ def ans(question):
 #     print("Error asking ChatGPT", e)
 # import openai
 
-# openai.api_key = "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"
+# openai.api_key = "YOUR API KEY"
 # # print(response.text)
 # response = openai.Completion.create(
 #     engine="text-davinci-002",
