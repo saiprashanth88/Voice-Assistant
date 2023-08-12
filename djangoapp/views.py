@@ -19,7 +19,7 @@ import time
 import os
 
 
-# openai.api_key = "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"
+# openai.api_key = "Your API KEY"
 # model_engine = "gpt-3.5-turbo"
 # response = openai.ChatCompletion.create(
 #     model='gpt-3.5-turbo',
@@ -59,7 +59,7 @@ import os
 #     print("Error asking ChatGPT", e)
 # import openai
 
-# openai.api_key = "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"
+# openai.api_key = "YOUR API KEY"
 # # print(response.text)
 # response = openai.Completion.create(
 #     engine="text-davinci-002",
