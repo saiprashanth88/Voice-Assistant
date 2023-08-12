@@ -42,7 +42,7 @@ def get_current_location():
 import requests
 
 def myweather():
-    api_key = 'eb7a2d4a5a9b284fe54b7bb547238443'
+    api_key = 'Your ali key'
     city_name = "Medchal"
     base_url = 'http://api.openweathermap.org/data/2.5/weather?'
 
@@ -61,7 +61,7 @@ def myweather():
     pass
 
 
-GOOGLE_MAPS_API_KEY = "AIzaSyBK3AgwMmvv6lhxEzIvqYGlZT2NyeEZwyg"
+GOOGLE_MAPS_API_KEY = "your api key"
 def navigate(destination):
     # Initialize the Google Maps API client
     gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
@@ -93,7 +93,7 @@ def navigate(destination):
 
 
 
-# openai.api_key = "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"
+# openai.api_key = "your api key"
 # model_engine = "gpt-3.5-turbo"
 # response = openai.ChatCompletion.create(
 #     model='gpt-3.5-turbo',
