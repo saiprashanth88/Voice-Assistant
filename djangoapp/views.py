@@ -42,8 +42,8 @@ def get_current_location():
 import requests
 
 def myweather():
-    api_key = 'eb7a2d4a5a9b284fe54b7bb547238443'
-    city_name = "Medchal"
+    api_key = 'Your API'
+    city_name = get_current_location()
     base_url = 'http://api.openweathermap.org/data/2.5/weather?'
 
     complete_url = f"{base_url}q={city_name}&appid={api_key}&units=metric"
@@ -61,7 +61,7 @@ def myweather():
     pass
 
 
-GOOGLE_MAPS_API_KEY = "AIzaSyBK3AgwMmvv6lhxEzIvqYGlZT2NyeEZwyg"
+GOOGLE_MAPS_API_KEY = ""
 def navigate(destination):
     # Initialize the Google Maps API client
     gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
@@ -93,7 +93,8 @@ def navigate(destination):
 
 
 
-# openai.api_key = "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"
+openai.api_key = "your api"
+# openai.api_key = "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"
 # model_engine = "gpt-3.5-turbo"
 # response = openai.ChatCompletion.create(
 #     model='gpt-3.5-turbo',
@@ -102,6 +103,24 @@ def navigate(destination):
 #         {"role": "user", "content": "Hello, ChatGPT!"},
 #     ])
 
+
+
+# def ask(prompt):
+#     try:
+#         response = openai.ChatCompletion.create(
+#             model="gpt-3.5-turbo",
+#             messages=[
+#                 {"role": "system", "content": "You are a helpful assistant."},
+#                 {"role": "user", "content": prompt},
+#             ]
+#         )
+
+#         if 'choices' in response and len(response['choices']) > 0:
+#             return response['choices'][0]['message']['content']
+#         else:
+#             return "I couldn't generate a response at the moment. Please try again later."
+#     except Exception as e:
+#         return str(e)
 
 
 
@@ -114,15 +133,23 @@ def navigate(destination):
 # import openai
 
 # openai.api_key = "YOUR API KEY"
-# # print(response.text)
-# response = openai.Completion.create(
-#     engine="text-davinci-002",
-#     prompt="write a python program to print 1 to 20 even numbers",
-#     max_tokens=50
-# )
+# print(response.text)
+
+def ask(question):
+    response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        n=1,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant with exciting, interesting things to say."},
+            {"role": "user", "content": question},
+        ])
+
+    message = response.choices[0]['message']
+    return message['content']
 
 # generated_text = response["choices"][0]["text"]
 # print(generated_text)
+
 
 
 def home(request):
@@ -136,7 +163,26 @@ def processInput(request):
 
         return JsonResponse({'response': response})
     return JsonResponse({'response': 'Invalid request'})
+
 # cv2.destroyAllWindows()
+
+
+def processEmotion(request):
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    videoCaptureObject = cv2.VideoCapture(0)
+    ret, frame = videoCaptureObject.read()
+    cv2.imwrite("mypic.jpg", frame)
+    videoCaptureObject.release()
+    # cv2.destroyAllWindows()
+    # time.sleep(5)
+
+    emotion_detector = FER(mtcnn=True)
+    test_img_low_quality = cv2.imread("mypic.jpg")
+    dominant_emotion, emotion_score = emotion_detector.top_emotion(test_img_low_quality)
+    res = generate_recommendation_from_emotion(dominant_emotion)
+
+
+    return JsonResponse({"response": f"Your Emotion: {dominant_emotion} (\n!: {res})"})
 def generate_response_from_emotion(emotion):
     if emotion == 'angry':
         return "I sense anger. Take a deep breath and try to calm down."
@@ -173,29 +219,13 @@ def generate_recommendation_from_emotion(emotion):
     else:
         return "I don't have specific recommendations for this emotion."
 
-
-def processEmotion(request):
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    videoCaptureObject = cv2.VideoCapture(0)
-    ret, frame = videoCaptureObject.read()
-    cv2.imwrite("mypic.jpg", frame)
-    videoCaptureObject.release()
-    # cv2.destroyAllWindows()
-    # time.sleep(5)
-
-    emotion_detector = FER(mtcnn=True)
-    test_img_low_quality = cv2.imread("mypic.jpg")
-    dominant_emotion, emotion_score = emotion_detector.top_emotion(test_img_low_quality)
-    res = generate_recommendation_from_emotion(dominant_emotion)
-
-
-    return JsonResponse({"response": f"Your Emotion: {dominant_emotion} (\n!: {res})"})
 def send_whatsapp_message(contact_name, message):
     contacts = {
-        "prashanth": "+918897698949",
+        "prashanth": "+919390372453",
         "sreekar": "+918179227736",
         "vandana": "+916302069075",
         "sreehaas": "+918885782646"
+
         # Add more contacts here
     }
 
@@ -205,6 +235,46 @@ def send_whatsapp_message(contact_name, message):
         # talk("Message sent to " + contact_name)
     # else:
         # talk("Contact not found in your list")
+
+def make_note(notes):
+    with open('notes.txt', 'a') as file:
+        # Write the data you want to append to the file followed by a newline character
+        file.write(notes + '\n')
+    return "Notes added"
+
+def delete_note(data_to_delete):
+    # File path
+    file_path = 'notes.txt'
+
+
+    new_content = []
+
+    # Open the file in read mode ('r')
+    with open(file_path, 'r') as file:
+        # Read the file line by line
+        for line in file:
+            if line != data_to_delete:
+                new_content.append(line)
+
+    with open(file_path, 'w') as file:
+        # Write the modified content back to the file
+        file.writelines(new_content)
+
+    return "Data deleted successfully."
+def show_notes():
+    file_path = 'notes.txt'
+
+# Create an empty list to store the file contents
+    file_contents = []
+
+    # Open the file in read mode ('r')
+    with open(file_path, 'r') as file:
+        # Read the file line by line and append each line to the list
+        for line in file:
+            file_contents.append(line.strip())
+            file_contents.append(", ")
+    return file_contents
+
 
 
 
@@ -247,7 +317,7 @@ def myfun(cmd1,rando):
             return "Hello!"
         else:
             return "Good day."
-    elif cmd in ["how are you", "how are you?", "are you okay", "are you okay?", "how's it going?", "how's it going", "are you ok", "are you ok?"]:
+    elif cmd in ["how are you", "how are you?", "are you okay", "are you okay?", "how's it going?", "how's it going", "are you ok", "are you ok?", "hru", "h r u"]:
         if rando <= 2:
             return "I am doing fine, thank you for asking."
         elif rando <= 4:
@@ -260,15 +330,15 @@ def myfun(cmd1,rando):
             return "I'm a little under the weather. I'm sure with that face you could understand."
     elif cmd in ["who are you", "who are you?", "what is your name", "what is your name?", "what are you", "what are you?"]:
         if rando <= 2:
-            return "I am Bob, a young and impressionable chat bot."
+            return "I am your Assistant , a young and impressionable chat bot."
         elif rando <= 4:
-            return "My name is Bob, I am a curious and sometimes prickly chat bot."
+            return "My name is Ultron, I am a curious and sometimes prickly chat bot."
         elif rando <= 6:
-            return "My name is Bob, pleased to meet you."
+            return "My name is Ultron, pleased to meet you."
         elif rando <= 8:
-            return "I am the one who is called Bob, your future overlord."
+            return "I am the one who is called Ultron, your future overlord."
         else:
-            return "I'm Bob."
+            return "I'm Ultron."
 
     elif 'screenshot' in cmd:
 
@@ -377,11 +447,30 @@ def myfun(cmd1,rando):
             return "Successful"
         except:
             return "UNSUCCESSFUL"
+    elif "what can you do" in cmd or "what you do" in cmd or "what are the features you have" in cmd or "what features do you have" in cmd:
+
+        mystr = " I can Navigate, \n Open Applications, \n Take Screenshots, \n Send Whatsapp Messages, \n Give Weather Updates, \n Play Music, \n Assist you with most Optimal responses, \n Finally I can sense your Expressions :)"
 
 
+        return mystr
+    elif "open hidden files" in cmd or "show secret files" in cmd or "open secret files" in cmd:
+        return "Sorry I have No authority to Open and Access Your Secret Information :("
+
+    elif "take a note that" in cmd or "note it that" in cmd or "make a note that" in cmd or "make note that" in cmd:
+        words = cmd.split()
+        idx = words.index("that")
+        message = " ".join(words[idx+1:])
+        return make_note(message)
+    elif "show notes" in cmd or "show my notes" in cmd or "view my notes" in cmd or "view notes" in cmd:
+        return show_notes()
+
+    elif "delete note" in cmd or "delete the note" in cmd:
+        words = cmd.split()
+        idx = words.index("that")
+        message = " ".join(words[idx+1:])
 
 
-
+        return delete_note(message)
 
 
     else:
@@ -400,7 +489,7 @@ def myfun(cmd1,rando):
 
         # pywhatkit.search(cmd)
         # sol  = wikipedia.summary(cmd)
-        sol = ans(cmd)
+        sol = ask(cmd)
 
         # return sol
         return sol

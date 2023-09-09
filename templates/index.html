@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
-<style>
+<!-- <style>
   /* Add custom styles for the robot */
   .robot-container {
       position: relative;
@@ -38,7 +38,7 @@
 
   .robot i {
       color: #fff;
-  }
+  } -->
 </style>
 
 </head>
@@ -99,6 +99,7 @@
           url: "{% url 'processInput' %}", // Replace with the actual URL to your Django view
           data: {
             user_input: userInput,
+            csrfmiddlewaretoken: '{{ csrf_token }}',
           },
           beforeSend: function (xhr, settings) {
             xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));

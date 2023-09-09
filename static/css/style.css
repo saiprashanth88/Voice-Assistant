@@ -97,6 +97,7 @@ https://codepen.io/ArtemGordinsky/pen/GnLBq?editors=1100
   -o-animation: 1s blink step-end infinite;
   animation: 1s blink step-end infinite;
 }
+
 /*
 @keyframes "blink" {
   from, to {
